@@ -216,10 +216,15 @@ class Collection(APIMixin):
         """Return a filtered, ordered queryset for this collection."""
         qs = self.model.objects.all() if base_qs is None else base_qs
         # enforce ordering so later use of distinct() works as expected.
+        # SM - experiment with not actually sorting and the effects on distinct, because this is causing a huge
+        #  performance hit in some cases
+        # if not qs.query.order_by:
+        #     if self.order_by is None:
+        #         qs = qs.order_by('pk')
+        #     else:
+        #         qs = qs.order_by(*self.order_by)
         if not qs.query.order_by:
-            if self.order_by is None:
-                qs = qs.order_by('pk')
-            else:
+            if self.order_by is not None:
                 qs = qs.order_by(*self.order_by)
         if self.qs_filter:
             qs = qs.filter(self.qs_filter)
